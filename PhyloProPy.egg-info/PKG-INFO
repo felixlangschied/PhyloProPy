@@ -1,0 +1,6 @@
+Metadata-Version: 2.1
+Name: PhyloProPy
+Version: 0.1
+Summary: Read, write and modify PhyloProfile files in Python
+Author: Felix Langschied
+Author-email: langschied@bio.uni-frankfurt.de

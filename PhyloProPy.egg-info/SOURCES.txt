@@ -1,0 +1,8 @@
+pyproject.toml
+setup.py
+PhyloProPy/PhyloProfile.py
+PhyloProPy/__init__.py
+PhyloProPy.egg-info/PKG-INFO
+PhyloProPy.egg-info/SOURCES.txt
+PhyloProPy.egg-info/dependency_links.txt
+PhyloProPy.egg-info/top_level.txt
