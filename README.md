@@ -4,13 +4,13 @@
 
 ## Features
 
-*   **PhyloProfile**:
-  *   **Filtering**: Filter the PhyloProfile stored in the object based on a list of genes or taxonomic IDs.
-  *   **Slicing**: Return specific portions of the PhyloProfile as a Pandas DataFrame.
-  *   **Lineage slices**: Extract a slice of the PhyloProfile containing members of a lineage based on information in the NCBI Taxonomy.
-*   **Phylo-tSNE**:
-  *   **Visualization**: Project (large) phylogenetic profiles into 2D space.
-  *   **Color lineages**: Label datapoints given a taxonomic level
+- **PhyloProfile**:
+  - **Filtering**: Filter the PhyloProfile stored in the object based on a list of genes or taxonomic IDs.
+  - **Slicing**: Return specific portions of the PhyloProfile as a Pandas DataFrame.
+  - **Lineage slices**: Extract a slice of the PhyloProfile containing members of a lineage based on information in the NCBI Taxonomy.
+- **Phylo-tSNE**:
+  - **Visualization**: Project (large) phylogenetic profiles into 2D space.
+  - **Color lineages**: Label datapoints given a taxonomic level
 
 ## PhyloProfile Class
 
