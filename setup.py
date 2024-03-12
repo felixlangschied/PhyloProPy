@@ -7,5 +7,16 @@ setup(
     description='Read, write and modify PhyloProfile files in Python',
     author='Felix Langschied',
     author_email='langschied@bio.uni-frankfurt.de',
-    #url='https://www.example.com',
+    install_requires=[
+        'ete3',
+        'pandas',
+        'scikit-learn',
+        'plotly',
+        'numpy',
+        'seaborn',
+        'matplotlib',
+    ],
+    entry_points={
+        'console_scripts': ["phyloSNE = PhyloProPy.phyloprofile_tsne:main"],
+    },
 )
