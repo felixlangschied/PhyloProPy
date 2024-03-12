@@ -23,8 +23,11 @@ Create a `PhyloProfile` object by providing a path to your phyloprofile file alo
 # stores FAS foreward scores per default
 pp = PhyloProfile(path='/path/to/phyloprofile')
 
-# binary profile
+# binary profile (boolean)
 pp = PhyloProfile(path='/path/to/phyloprofile', style='binary')
+
+# store entries from the OrthoID column
+pp = PhyloProfile(path='/path/to/phyloprofile', style='orthoid')
 
 # order profile according to taxonomic distance to a reference species (left to right)
 pp = PhyloProfile(path='/path/to/phyloprofile', reference=9606)
