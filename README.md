@@ -12,7 +12,7 @@
   - **Lineage slices**: Extract a slice of the PhyloProfile containing members of a lineage based on information in the NCBI Taxonomy
 - [**Phylo-tSNE**](#phylo-tsne):
   - **Visualization**: Project (large) phylogenetic profiles into 2D space
-  - **Color lineages**: Label datapoints given a taxonomic level
+  - **Color lineages**: Label datapoints according to a taxonomic level
 
 ## PhyloProfile Class
 
@@ -70,6 +70,7 @@ pp.write(path='./output.phyloprofile')
 ```
 
 ## Phylo-tSNE
+
 
 
 
