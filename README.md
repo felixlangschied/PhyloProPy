@@ -1,6 +1,6 @@
 # PhyloProPy
 
-`PhyloProPy` is a Python package designed to parse and manipulate phylogenetic profiles generated with [PhyloProfile](https://github.com/BIONF/PhyloProfile). It allows for the loading, processing, and visualization of PhyloProfiles.
+`PhyloProPy` is a Python package designed to parse and manipulate phylogenetic profiles generated with [PhyloProfile](https://github.com/BIONF/PhyloProfile). It allows for the loading, processing, and visualization of phylogenetic profiles as 2D-matrices.
 
 ## Features
 
