@@ -1,6 +1,6 @@
 # PhyloProPy
 
-`PhyloProPy` is a Python class designed to parse and manipulate phylogenetic profile data generated with [https://github.com/BIONF/PhyloProfile](https://github.com/BIONF/PhyloProfile). It allows for the loading, processing, and visualization of phyloprofile matrices.
+`PhyloProPy` is a Python package designed to parse and manipulate phylogenetic profiles generated with [https://github.com/BIONF/PhyloProfile](https://github.com/BIONF/PhyloProfile). It allows for the loading, processing, and visualization of PhyloProfiles.
 
 ## Features
 
@@ -38,8 +38,12 @@ Filter or slice the phyloprofile based on genes or taxa.
 ```
 # Filtering 
 pp.filter_pp(genes=['gene1', 'gene2'], taxa=['9606', '10090'])
+
 # Slicing
 slice_dataframe = pp.slice(genes=['gene1', 'gene2'])
+
+# Use slicing to generate a dataframe copy of the profile stored in the PhyloProfile class
+slice_dataframe = pp.slice()
 ```
 
 ### Lineage Analysis
