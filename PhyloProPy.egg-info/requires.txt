@@ -1,0 +1,7 @@
+ete3
+pandas
+scikit-learn
+plotly
+numpy
+seaborn
+matplotlib

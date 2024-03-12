@@ -1,8 +1,16 @@
+LICENSE
+README.md
 pyproject.toml
 setup.py
 PhyloProPy/PhyloProfile.py
 PhyloProPy/__init__.py
+PhyloProPy/load_phyloprofile.py
+PhyloProPy/logger.py
+PhyloProPy/mapping.py
+PhyloProPy/phyloprofile_tsne.py
 PhyloProPy.egg-info/PKG-INFO
 PhyloProPy.egg-info/SOURCES.txt
 PhyloProPy.egg-info/dependency_links.txt
+PhyloProPy.egg-info/entry_points.txt
+PhyloProPy.egg-info/requires.txt
 PhyloProPy.egg-info/top_level.txt

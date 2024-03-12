@@ -1,0 +1,2 @@
+[console_scripts]
+phyloSNE = PhyloProPy.phyloprofile_tsne:main

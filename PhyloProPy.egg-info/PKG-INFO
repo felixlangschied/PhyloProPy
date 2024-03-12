@@ -4,3 +4,11 @@ Version: 0.1
 Summary: Read, write and modify PhyloProfile files in Python
 Author: Felix Langschied
 Author-email: langschied@bio.uni-frankfurt.de
+License-File: LICENSE
+Requires-Dist: ete3
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: plotly
+Requires-Dist: numpy
+Requires-Dist: seaborn
+Requires-Dist: matplotlib

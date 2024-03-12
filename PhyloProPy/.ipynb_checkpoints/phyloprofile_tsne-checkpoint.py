@@ -11,6 +11,7 @@ import plotly.express as px
 from sklearn.manifold import TSNE
 from collections import Counter
 pd.set_option('mode.chained_assignment', None)
+import logging
 
 
 def taxlevel_from_lineage(ncbi, lineage, taxlevel):
@@ -109,9 +110,40 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def perform_tsne(
+    df, taxid2name, taxid2levelname, method, jitter, n_components, scaler, transpose, seed, width, height
+    
+):
+    red_df = dimension_reduced_phyloprofile(
+        df, taxid2name, taxid2levelname, 
+        method=method, jitter=jitter,
+        n_components=2, scaler=scaler, transpose=transpose, seed=seed
+    )
+    # plot
+    if 'taxid' in red_df.columns:
+        fig = px.scatter(
+            red_df, x='PC1', y='PC2', #title=f'{method} plot', 
+            labels={'PC1': f'{method} 1', 'PC2': f'{method} 2'}, 
+            hover_data={'species':True, 'taxlevel': True, 'PC1': False, 'PC2': False}, width=width, height=height,
+            size='sum',
+            color='taxlevel',
+            #color_discrete_sequence=px.colors.qualitative.Vivid
+        )
+    else:
+        fig = px.scatter(
+            red_df, x='PC1', y='PC2', #title=f'{method} plot', 
+            labels={'PC1': f'{method} 1', 'PC2': f'{method} 2'}, 
+            hover_data={'gene' :True, 'PC1': False, 'PC2': False}, width=width, height=height,
+            size='sum'
+            #color_discrete_sequence=px.colors.qualitative.Vivid
+        )
+    return fig
+
+
 def main():
     # arguments
     args = parse_arguments()
+    logger = logging.getLogger('phyloprofile')
     
     # Convert string scaler to actual scaler object
     scaler_mapping = {
@@ -122,47 +154,36 @@ def main():
     }
     scaler = scaler_mapping[args.scaler]
 
+    # load data    
+    pp = PhyloProfile(args.path, style=args.style, from_custom=args.from_custom)
+
     # orientation
     if args.orient == 'species':
         transpose = True
+        logger.info(f'Generating labels on "{args.taxlevel}" level')
+        taxids4download = [taxid.replace('ncbi', '') for taxid in pp.matrix.columns]
+        taxid2name, taxid2lineage, taxid2levelname = retrieve_taxa_mapping(taxids4download, args.taxlevel, args.update_taxonomy)
     elif args.orient == 'genes':
         transpose = False
+        taxid2name, taxid2lineage, taxid2levelname = {}, {}, {}
     else:
         raise ValueError(f'Unknown orientation "{orient}". Choose "species" or "genes".')
 
-    # load data    
-    pp = PhyloProfile(args.path, style=args.style, from_custom=args.from_custom)
-    taxids4download = [taxid.replace('ncbi', '') for taxid in pp.matrix.columns]
-    taxid2name, taxid2lineage, taxid2levelname = retrieve_taxa_mapping(taxids4download, args.taxlevel, args.update_taxonomy)
-    
-    # perform tSNE
-    red_df = dimension_reduced_phyloprofile(
+
+
+    # tsne
+    logger.info(f'Generating plot')
+    fig = perform_tsne(
         pp.matrix, taxid2name, taxid2levelname, 
         method=args.method, jitter=args.jitter,
-        n_components=2, scaler=scaler, transpose=transpose, seed=args.seed
+        n_components=2, scaler=scaler, transpose=transpose, seed=args.seed,
+        width=args.width, height=args.height
     )
     
-    # plot
-    if 'taxid' in red_df.columns:
-        fig = px.scatter(
-            red_df, x='PC1', y='PC2', #title=f'{method} plot', 
-            labels={'PC1': f'{method} 1', 'PC2': f'{method} 2'}, 
-            hover_data={'species':True, 'taxlevel': True, 'PC1': False, 'PC2': False}, width=args.width, height=args.height,
-            size='sum',
-            color='taxlevel',
-            #color_discrete_sequence=px.colors.qualitative.Vivid
-        )
-    else:
-        fig = px.scatter(
-            red_df, x='PC1', y='PC2', #title=f'{method} plot', 
-            labels={'PC1': f'{method} 1', 'PC2': f'{method} 2'}, 
-            hover_data={'gene' :True, 'PC1': False, 'PC2': False}, width=args.width, height=args.heigth,
-            size='sum',
-            #color_discrete_sequence=px.colors.qualitative.Vivid
-        )
-        
     # save
-    fig.write_html(outpath)
+    logger.info(f'Writing plot to {args.outpath}')
+    fig.write_html(args.outpath)
+    logger.info(f'Done')
 
 if __name__ == "__main__":
     main()
