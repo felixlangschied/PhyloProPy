@@ -4,7 +4,7 @@
 
 ## Features
 
-- **PhyloProfile Python Class**:
+- [**PhyloProfile Python Class**](#phyloprofile-class):
   - **Filtering**: Filter the PhyloProfile stored in the object based on a list of genes or taxonomic IDs.
   - **Slicing**: Return specific portions of the PhyloProfile as a Pandas DataFrame.
   - **Lineage slices**: Extract a slice of the PhyloProfile containing members of a lineage based on information in the NCBI Taxonomy.
