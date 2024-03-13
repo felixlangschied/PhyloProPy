@@ -6,7 +6,7 @@
 
 - [**PhyloProfile Python Class**](#phyloprofile-class):
   - **I/O**: Read and write PhyloProfile files
-  - **Taxonomic order:** Order the PhyloProfile matrix according to the taxonomic distance to a reference speices
+  - **Taxonomic order:** Order the PhyloProfile matrix according to the taxonomic distance to a reference species
   - **Filtering**: Filter the PhyloProfile stored in the object based on a list of genes or taxonomic IDs
   - **Slicing**: Return specific portions of the PhyloProfile as a Pandas DataFrame
   - **Lineage slices**: Extract a slice of the PhyloProfile containing members of a lineage based on information in the NCBI Taxonomy
@@ -21,17 +21,19 @@
 Create a `PhyloProfile` object by providing a path to your phyloprofile file along with other optional parameters.
 ```
 # stores FAS foreward scores per default
-pp = PhyloProfile(path='/path/to/phyloprofile')
+pp = PhyloProfile(path='/path/to/PhyloProPy/data/medium.phyloprofile')
 
-# binary profile (boolean)
-pp = PhyloProfile(path='/path/to/phyloprofile', style='binary')
+# binary profile
+pp = PhyloProfile(path='/path/to/PhyloProPy/data/medium.phyloprofile', style='binary')
 
 # store entries from the OrthoID column
-pp = PhyloProfile(path='/path/to/phyloprofile', style='orthoid')
+pp = PhyloProfile(path='/path/to/PhyloProPy/data/medium.phyloprofile', style='orthoid')
 
 # order profile according to taxonomic distance to a reference species (left to right)
-pp = PhyloProfile(path='/path/to/phyloprofile', reference=9606)
-pp = PhyloProfile(path='/path/to/phyloprofile', reference='Mus musculus')
+pp = PhyloProfile(path='/path/to/PhyloProPy/data/medium.phyloprofile', reference=9606)
+pp = PhyloProfile(path='/path/to/PhyloProPy/data/medium.phyloprofile', reference='Mus musculus')
+pp.set_reference('Homo_sapiens')
+
 ```
 
 ### Filtering and Slicing
@@ -55,11 +57,30 @@ Extract a slice of the PhyloProfile based on a specific lineage
 lineage_slice = pp.lineage_slice('Metazoa')
 ```
 
+### Visualization
+
+Plot Phyloprofile as tSNE (returns a plotly figure)
+
+```
+# accepts all inputs of the standalone function described below
+fig = pp.tsne(orient='species', taxlevel='kingdom')
+fig.show()
+```
+
 ### Binary Transformation
 
 Convert the FAS scores in the phyloprofile matrix to binary values.
 ```
 pp.fas_to_binary()
+```
+
+### Working with the NCBI Taxonomy 
+
+PhyloProPy uses the [NCBI Taxonomy functionality of the ETE3 toolkit](http://etetoolkit.org/docs/latest/tutorial/tutorial_ncbitaxonomy.html) under the hood. Use it for even more control over your PhyloProfile object.
+
+```
+ncbi = pp.ncbi
+name2taxid = ncbi.get_name_translator(['Homo sapiens', 'primates'])
 ```
 
 ### Writing Output
@@ -77,10 +98,10 @@ Project a phylogenetic profile into 2D space.
 
 ```
 # minimal
-phyloSNE --path /path/to/PhyloProPy/tests/data/medium.phyloprofile
+phyloSNE --path /path/to/PhyloProPy/data/medium.phyloprofile
 
 # set taxonomic level used for generating the labels as well as the output location
-phyloSNE --path /path/to/PhyloProPy/tests/data/medium.phyloprofile --taxlevel phylum --output ./my_tsne_plot.html
+phyloSNE --path /path/to/PhyloProPy/data/medium.phyloprofile --taxlevel phylum --output ./my_tsne_plot.html
 ```
 
 View all options with:

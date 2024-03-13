@@ -17,6 +17,6 @@ setup(
         'matplotlib',
     ],
     entry_points={
-        'console_scripts': ["phyloSNE = PhyloProPy.phyloprofile_tsne:main"],
+        'console_scripts': ["phyloSNE = PhyloProPy.standalone_tsne:main"],
     },
 )

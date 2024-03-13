@@ -1,10 +1,12 @@
 import pandas as pd
-import seaborn as sns
+import os
 from ete3 import NCBITaxa
-from PhyloProPy.load_phyloprofile import phyloprofile2matrix
+from PhyloProPy.load_phyloprofile import phyloprofile2matrix, sort_phyloprofile
+from PhyloProPy.plotting_tools import retrieve_taxa_mapping, perform_tsne, phylo_heatmap
 from PhyloProPy.logger import phyloprofile_logger
 from PhyloProPy.mapping import check_taxonomy_input
 import logging
+import plotly.express as px
 
 
 class PhyloProfile():
@@ -12,7 +14,7 @@ class PhyloProfile():
     Parse a PhyloProfile file and store it as a Pandas DataFrame.
     """
     def __init__(
-        self, path, style='fasf', from_custom=False, fasF_filter=0.0, fasB_filter=0.0, reference='', debug=False, silent=False
+        self, path='', style='fasf', from_custom=False, fasF_filter=0.0, fasB_filter=0.0, reference='', debug=False, silent=False
     ):
         """
         style: ['fasf', 'fasb', 'binary', 'orthoid'] -> How to fill cells of phyloprofile matrix
@@ -23,9 +25,15 @@ class PhyloProfile():
         debug: bool -> More verbose
         silent: bool -> Less verbose
         """
+        # logging
         logger = phyloprofile_logger(debug=debug, silent=silent)
+        # taxonomy
         logger.info('Reading NCBI Taxonomy')
         self.ncbi = NCBITaxa()
+        #data
+        if not path:
+            logger.info('No path specified. Loading example phyloprofile')
+            path  = os.path.dirname(__file__) + '/data/medium.phyloprofile'
         self.matrix, self.outmatrix = phyloprofile2matrix(path, self.ncbi, style, from_custom, fasF_filter, fasB_filter, reference)
 
     def fas_to_binary(self):
@@ -62,6 +70,11 @@ class PhyloProfile():
             taxa = [taxon if str(taxon).startswith('ncbi') else f'ncbi{taxon}' for taxon in taxa]
             return self.matrix.filter(taxa, axis='columns')
         return self.matrix
+
+    def set_reference(self, reference):
+        _, order = sort_phyloprofile(self.matrix, self.ncbi, reference)
+        self.matrix = self.matrix[order]
+        self.outmatrix = self.outmatrix[order]
          
     def print(self):
         """Print the phyloenetic profile dataframe"""
@@ -85,6 +98,37 @@ class PhyloProfile():
      
         descendants = self.ncbi.get_descendant_taxa(input)
         return self.matrix.filter([f'ncbi{taxid}' for taxid in descendants])
+
+    def tsne(self, orient='species', taxlevel='species', update_taxonomy=False, **kwargs):
+        """Project phylogenetic profile into 2D space and scatterplot."""
+        logger = logging.getLogger('phyloprofile')
+        if orient == 'species':
+            transpose = True
+            logger.info(f'Generating labels on "{taxlevel}" level')
+            taxids4download = [taxid.replace('ncbi', '') for taxid in self.matrix.columns]
+            taxid2name, taxid2lineage, taxid2levelname = retrieve_taxa_mapping(taxids4download, taxlevel, update_taxonomy)
+        elif orient == 'genes':
+            transpose = False
+            taxid2name, taxid2lineage, taxid2levelname = {}, {}, {}
+        else:
+            raise ValueError(f'Unknown orientation "{orient}". Choose "species" or "genes".')
+        logger.info(f'Generating plot')
+        fig = perform_tsne(
+            self.matrix, taxid2name, taxid2levelname, transpose=transpose,
+            **kwargs
+        )
+        logger.info(f'Done')
+        return fig
+
+    def plot(self, clustermethod='average', names=True, **kwargs):
+        """Plot phylogenetic profile as simple heatmap."""
+        if names:
+            taxids = [int(taxid.replace('ncbi', '')) for taxid in self.matrix.columns]
+            taxid2name = self.ncbi.get_taxid_translator(taxids)
+            taxid2name = {f'ncbi{taxid}': name for taxid, name in taxid2name.items()}
+            return phylo_heatmap(self.matrix.rename(columns=taxid2name), clustermethod, **kwargs)
+        else:
+            return phylo_heatmap(self.matrix, clustermethod, **kwargs)
         
 
 

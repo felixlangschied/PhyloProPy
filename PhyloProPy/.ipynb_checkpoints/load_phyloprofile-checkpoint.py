@@ -42,35 +42,38 @@ def order_taxa(tree, reference):
     return ordernames
 
 
+def sort_phyloprofile(df, ncbi, reference):
+    # logging
+    logger = logging.getLogger('phyloprofile')
+    logger.info(f'Reordering matrix according to "{reference}"')
+
+    # find all taxids
+    taxids = [int(taxid.replace('ncbi', '')) for taxid in df.columns]
+    tree = ncbi.get_topology(taxids)
+    
+    # check format of reference
+    reference = check_taxonomy_input(reference, ncbi)
+    if not reference:
+        logger.warning(f'Could not map {reference} to exactly one NCBI taxonomy ID. Skipping Ordering')
+        logger.warning(f'Received: {name2taxid}')
+
+    # check that reference is valid
+    if not reference in taxids:
+        logger.warning(f'Could not find {reference} in the taxonomy IDs of your PhyloProfile file. Skipping ordering..')
+        return df
+    
+    # retrieve order
+    order = order_taxa(tree, str(reference))
+
+    return df[order], order
+
+
 def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter, reference):
     """
     Convert a phyloprofile file into a 2D matrix.
     Creates a copy of matrix containing the forward and backward FAS scores for writing phyloprofile output files.
     """
-    def sort_phyloprofile(df, ncbi, reference):
-        # logging
-        logger = logging.getLogger('phyloprofile')
-        logger.info(f'Reordering matrix according to "{reference}"')
 
-        # find all taxids
-        taxids = [int(taxid.replace('ncbi', '')) for taxid in df.columns]
-        tree = ncbi.get_topology(taxids)
-        
-        # check format of reference
-        reference = check_taxonomy_input(reference, ncbi)
-        if not reference:
-            logger.warning(f'Could not map {reference} to exactly one NCBI taxonomy ID. Skipping Ordering')
-            logger.warning(f'Received: {name2taxid}')
-
-        # check that reference is valid
-        if not reference in taxids:
-            logger.warning(f'Could not find {reference} in the taxonomy IDs of your PhyloProfile file. Skipping ordering..')
-            return df
-        
-        # retrieve order
-        order = order_taxa(tree, str(reference))
-
-        return df[order]
 
     def initialize_phyloprofile_df(path, gene_idx, taxa_idx):
         taxa = set()
@@ -126,7 +129,7 @@ def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter
     logger.info(f'Initializing PhyloProfile matrix')
     df = initialize_phyloprofile_df(path, gene_idx, taxa_idx)
     if reference: 
-        df = sort_phyloprofile(df, ncbi, reference)
+        df, _ = sort_phyloprofile(df, ncbi, reference)
     logger.info(f'Loading PhyloProfile matrix')
     df, outdf = fill_phyloprofile_dataframe(df, path, style, gene_idx, taxa_idx, ortho_idx, fasf_idx, fasb_idx)
     return df, outdf

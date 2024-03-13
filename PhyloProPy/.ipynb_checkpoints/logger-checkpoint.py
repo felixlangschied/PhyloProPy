@@ -1,7 +1,7 @@
 import logging
 
 def phyloprofile_logger(log_file='./phyloprofile.log', debug=False, silent=False):
-
+    
     # parse logging level
     if debug:
         level = logging.DEBUG
@@ -12,6 +12,8 @@ def phyloprofile_logger(log_file='./phyloprofile.log', debug=False, silent=False
     
     # Create a logger instance
     logger = logging.getLogger('phyloprofile')
+    if logger.hasHandlers():
+        logger.handlers.clear()
     logger.setLevel(level)
     
     # Create a file handler and a console handler
