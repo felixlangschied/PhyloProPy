@@ -103,8 +103,12 @@ def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter
                 if float(fasf) <= fasF_filter or float(fasb) <= fasB_filter:
                     continue
 
+                # fill dataframe as list
                 if style == 'orthoid':
-                    df.loc[gene, taxid] = orthoid
+                    if not df.loc[gene, taxid]:
+                        df.loc[gene, taxid] = orthoid
+                    else:
+                        df.loc[gene, taxid] = []
                 elif style == 'fasf':
                     df.loc[gene, taxid] = float(fasf)
                 elif style == 'fasb':
@@ -112,7 +116,7 @@ def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter
                 elif style == 'binary':
                     df.loc[gene, taxid] = 1
                 else:
-                    raise ValueErro(f'Cannot fill matrix in style "{style}". Choose "orthoid", "fasf", "fasb" or "binary"')
+                    raise ValueError(f'Cannot fill matrix in style "{style}". Choose "orthoid", "fasf", "fasb" or "binary"')
                 outdf.loc[gene, taxid] = (orthoid, fasf, fasb)
 
         return df.fillna(0), outdf.fillna(0)
