@@ -1,8 +1,10 @@
+import numpy as np
+
 
 def check_taxonomy_input(lineage, ncbi):
     """Returns taxid as int"""
     # check format of lineage
-    if isinstance(lineage, int):
+    if isinstance(lineage, (int, np.integer)):
         return lineage
     elif str(lineage).startswith('ncbi'):
         return int(lineage.replace('ncbi', ''))

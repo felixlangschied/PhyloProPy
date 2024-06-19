@@ -2,7 +2,6 @@ import pandas as pd
 import logging
 from PhyloProPy.mapping import check_taxonomy_input
 
-
 def order_taxa(tree, reference):
     """Order taxa according to a tree object from the ete3 package."""
     def initial_list(t, reference):
@@ -64,16 +63,16 @@ def sort_phyloprofile(df, ncbi, reference):
     
     # retrieve order
     order = order_taxa(tree, str(reference))
+    order = [taxid for taxid in order if taxid in df.columns]
 
     return df[order], order
 
 
-def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter, reference):
+def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter, fillna, resolve_coorthologs, reference):
     """
     Convert a phyloprofile file into a 2D matrix.
     Creates a copy of matrix containing the forward and backward FAS scores for writing phyloprofile output files.
     """
-
 
     def initialize_phyloprofile_df(path, gene_idx, taxa_idx):
         taxa = set()
@@ -89,37 +88,63 @@ def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter
         return pd.DataFrame(index=list(genes), columns=list(taxa))
 
     def fill_phyloprofile_dataframe(df, path, style, gene_idx, taxa_idx, ortho_idx, fasf_idx, fasb_idx):
+        """Fill the empty dataframe with a list of values to accomodate co-orthologs. Then resolve the lists."""
+        def update_cell(df, gene, taxid, value):
+            cell_value = df.at[gene, taxid]
+            if isinstance(cell_value, float):
+                df.loc[gene, taxid] = [value]
+            elif isinstance(cell_value, list):
+                df.loc[gene, taxid].append(value)
+            else:
+                raise ValueError('Wrong initialzation of DataFrame for loading PhyloProfile.')
+
+        ##################################################################
         outdf = df.copy()
         with open(path) as fh:
             header = next(fh)
             for line in fh:
                 dl = line.strip().split('\t')
-                gene = dl[gene_idx]
-                orthoid = dl[ortho_idx]
-                taxid = dl[taxa_idx]
-                fasf = dl[fasf_idx]
-                fasb = dl[fasb_idx]
-
-                if float(fasf) <= fasF_filter or float(fasb) <= fasB_filter:
+                if len(dl) <= fasf_idx:
+                    fasf, fasb = 1, 1
+                    gene, orthoid, taxid = dl[gene_idx], dl[ortho_idx], dl[taxa_idx]
+                elif len(dl) <= fasb_idx:
+                    fasb = 1
+                    gene, orthoid, taxid, fasf = dl[gene_idx], dl[ortho_idx], dl[taxa_idx], float(dl[fasf_idx])
+                else:
+                    fasf, fasb = dl[fasf_idx], dl[fasb_idx]
+                    if fasf == 'NA':
+                        continue
+                    gene, orthoid, taxid, fasf, fasb = dl[gene_idx], dl[ortho_idx], dl[taxa_idx], float(dl[fasf_idx]), float(dl[fasb_idx])
+                
+                # apply filter
+                if fasf < fasF_filter or fasb < fasB_filter:
                     continue
 
-                # fill dataframe as list
+                # Fill with list
                 if style == 'orthoid':
-                    if not df.loc[gene, taxid]:
-                        df.loc[gene, taxid] = orthoid
-                    else:
-                        df.loc[gene, taxid] = []
-                elif style == 'fasf':
-                    df.loc[gene, taxid] = float(fasf)
-                elif style == 'fasb':
-                    df.loc[gene, taxid] = float(fasb)
+                    update_cell(df, gene, taxid, orthoid)
+                elif style == 'ncRNA':
+                    seedscore = fasf
+                    if seedscore == 0.0:
+                        seedscore = 0.5
+                    update_cell(df, gene, taxid, seedscore)
+                elif style in ['fasf', 'fasb']:
+                    value = fasf if style == 'fasf' else fasb
+                    update_cell(df, gene, taxid, value)
                 elif style == 'binary':
                     df.loc[gene, taxid] = 1
                 else:
                     raise ValueError(f'Cannot fill matrix in style "{style}". Choose "orthoid", "fasf", "fasb" or "binary"')
-                outdf.loc[gene, taxid] = (orthoid, fasf, fasb)
+                
+                # Update outdf 
+                update_cell(outdf, gene, taxid, (orthoid, fasf, fasb))
 
-        return df.fillna(0), outdf.fillna(0)
+        # resolve lists for scores
+        df, outdf = df.fillna(fillna), outdf.fillna(fillna)
+        if resolve_coorthologs and style in ['fasf', 'fasb', 'ncRNA']:
+            df = df.applymap(lambda x: max(x) if isinstance(x, list) else x)
+        
+        return df, outdf
 
     ##################################################################################################
     logger = logging.getLogger('phyloprofile')
@@ -129,7 +154,6 @@ def phyloprofile2matrix(path, ncbi, style, from_custom, fasF_filter, fasB_filter
     else:
         gene_idx, taxa_idx, ortho_idx, fasf_idx, fasb_idx = 0, 1, 2, 3, 4
 
-            
     logger.info(f'Initializing PhyloProfile matrix')
     df = initialize_phyloprofile_df(path, gene_idx, taxa_idx)
     if reference: 
