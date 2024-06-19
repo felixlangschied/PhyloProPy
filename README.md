@@ -59,12 +59,15 @@ lineage_slice = pp.lineage_slice('Metazoa')
 
 ### Visualization
 
-Plot Phyloprofile as tSNE (returns a plotly figure)
+Project large Phyloprofiles to 2D using UMAP 
 
 ```
-# accepts all inputs of the standalone function described below
-fig = pp.tsne(orient='species', taxlevel='kingdom')
+# return plotly figure
+fig = pp.two_d_plot(orient='species', taxlevel='kingdom')
 fig.show()
+
+# return dataframe
+umap_df = pp.two_d_plot(orient='genes', return_as='dataframe')
 ```
 
 ### Binary Transformation
@@ -88,26 +91,6 @@ name2taxid = ncbi.get_name_translator(['Homo sapiens', 'primates'])
 Write the processed phyloprofile to a file.
 ```
 pp.write(path='./output.phyloprofile')
-```
-
-## Standalone Phylo-tSNE 
-
-Project a phylogenetic profile into 2D space.
-
-### Usage
-
-```
-# minimal
-phyloSNE --path /path/to/PhyloProPy/data/medium.phyloprofile
-
-# set taxonomic level used for generating the labels as well as the output location
-phyloSNE --path /path/to/PhyloProPy/data/medium.phyloprofile --taxlevel phylum --output ./my_tsne_plot.html
-```
-
-View all options with:
-
-```
-phyloSNE -h
 ```
 
 
